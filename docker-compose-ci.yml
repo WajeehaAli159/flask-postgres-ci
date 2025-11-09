@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  web_ci:
+    image: python:3.10
+    container_name: myapp_web_ci
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app           # mount repo code into container (code volume)
+      - web-venv:/usr/src/app/venv
+    command: bash -c "python -m pip install --upgrade pip && pip install -r requirements.txt && python3 create_db.py && gunicorn -w 2 -b :5000 app:app"
+    ports:
+      - "5001:5000"               # host port different from Part-I
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    depends_on:
+      - postgres_ci
+
+  postgres_ci:
+    image: postgres:latest
+    container_name: myapp_db_ci
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    volumes:
+      - pgdata_ci:/var/lib/postgresql/data
+    secrets:
+      - postgres_user
+      - postgres_password
+
+secrets:
+  postgres_user:
+    file: ./secrets/postgres_user.txt
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+
+volumes:
+  pgdata_ci:
+  web-venv:
