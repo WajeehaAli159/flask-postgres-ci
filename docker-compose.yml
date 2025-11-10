@@ -1,35 +1,36 @@
-services:
-  db:
-    image: postgres:15
-    container_name: jenkins_postgres_db
-    environment:
-      POSTGRES_DB: flaskdb
-      POSTGRES_USER_FILE: /run/secrets/postgres_user
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-    secrets:
-      - postgres_user
-      - postgres_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+version: "3.9"
 
+services:
   web:
     image: python:3.10-slim
     container_name: jenkins_flask_web
     working_dir: /app
     volumes:
-      - ./web:/app
-    command: bash -c "pip install -r requirements.txt && python app.py"
+      - .:/app
+    command: bash -c "pip install -r web/requirements.txt && python web/app.py"
     ports:
       - "8081:5000"
     depends_on:
       - db
 
-secrets:
-  postgres_user:
-    file: ./secrets/postgres_user.txt
-  postgres_password:
-    file: ./secrets/postgres_password.txt
+  db:
+    image: postgres:15
+    container_name: jenkins_postgres_db
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    secrets:
+      - postgres_user
+      - postgres_password
 
 volumes:
   postgres_data:
+
+secrets:
+  postgres_user:
+    file: /opt/jenkins-secrets/postgres_user.txt
+  postgres_password:
+    file: /opt/jenkins-secrets/postgres_password.txt
 
