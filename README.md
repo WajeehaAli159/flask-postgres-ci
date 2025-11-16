@@ -1,4 +1,4 @@
-## Simple web application based on Python-Flask and Postgres with docker-compose-based deploy
+ ## Simple web application based on Python-Flask and Postgres with docker-compose-based deploy
 
 ### How to:
 
